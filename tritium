@@ -74,7 +74,7 @@ depends: vim, nginx, mysql-client, mycli, golang, nodejs
     cp "$BASH_PATH" ".dist/usr/bin/${NAME}"
 
     # add backup files
-    BACKUP_FILES=$(cat .tritiumfiles)
+    BACKUP_FILES=$(cat ~/.tritiumfiles)
     for file in $BACKUP_FILES
     do
         if [ ! -d "$file" ] && [ ! -f "$file" ]
@@ -97,14 +97,14 @@ add() {
         return
     fi
 
-    BACKUP_FILES=$(cat .tritiumfiles)
+    BACKUP_FILES=$(cat ~/.tritiumfiles)
     if [[ $BACKUP_FILES =~ $1 ]]
     then
         echo "[$1] is exist!"
         return
     fi
 
-    echo "$1" >> .tritiumfiles
+    echo "$1" >> ~/.tritiumfiles
 }
 
 if [ "$1" == "restore" ]
