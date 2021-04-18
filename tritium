@@ -88,7 +88,7 @@ then
     sudo rm -rf /.tritiumhomefiles
 fi
 
-mysqldump -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} --all-databases < /.mysql.sql
+sudo mysqldump -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} --all-databases < /.mysql.sql
 " > .dist/DEBIAN/postinst
 sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
 
@@ -114,7 +114,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
         fi
         EXIST_FILES[${#EXIST_FILES[@]}]=$file
         echo "add $file"
-        cp -r --parents "$absolute_file" .dist
+        sudo cp -r --parents "$absolute_file" .dist
 
         if [[ $file == ~* ]]
         then
@@ -143,7 +143,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
     }
     MYSQL_USER=$(conf client:user)
     MYSQL_PASSWORD=$(conf client:password)
-    mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --all-databases > .dist/.mysql.sql
+    sudo mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --all-databases > .dist/.mysql.sql
 
     dpkg -b .dist "tritium_$(date "+%Y%m%d%H%M%S").deb"
     rm -rf .dist
