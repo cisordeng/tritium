@@ -76,7 +76,7 @@ MYSQL_PASSWORD=\$(conf client:password)
 USER=\$(eval getent passwd {\$(awk '/^UID_MIN/ {print \$2}' /etc/login.defs)..\$(awk '/^UID_MAX/ {print \$2}' /etc/login.defs)} | cut -d: -f1)
 if [ -d /.tritiumhomefiles ]
 then
-    sudo cp -r /.tritiumhomefiles/* ~/
+    sudo cp -r /.tritiumhomefiles/. ~/
     for file in \$(ls -a /.tritiumhomefiles)
     do
         if [ \"\$file\" == \".\" ] || [ \"\$file\" == \"..\" ]
