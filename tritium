@@ -88,7 +88,7 @@ then
     sudo rm -rf /.tritiumhomefiles
 fi
 
-sudo mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} < /.mysql.sql
+mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} < /.all.sql
 " > .dist/DEBIAN/postinst
 sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
 
@@ -144,7 +144,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
     }
     MYSQL_USER=$(conf client:user)
     MYSQL_PASSWORD=$(conf client:password)
-    mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --all-databases > .dist/.mysql.sql
+    mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --default-character-set=utf8 -A > .dist/.all.sql
 
     dpkg -b .dist "tritium_$(date "+%Y%m%d%H%M%S").deb"
     rm -rf .dist
