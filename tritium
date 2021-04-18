@@ -102,6 +102,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
     USER=~
     for file in $BACKUP_FILES
     do
+        absolute_file=$file
         if [[ $file == ~* ]]
         then
             absolute_file="$USER${file:1}"
