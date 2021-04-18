@@ -115,7 +115,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
         fi
         EXIST_FILES[${#EXIST_FILES[@]}]=$file
         echo "add $file"
-        cp -r --parents "$absolute_file" .dist
+        cp -r --parents "$absolute_file" .dist/
 
         if [[ $file == ~* ]]
         then
