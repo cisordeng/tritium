@@ -88,7 +88,7 @@ then
     sudo rm -rf /.tritiumhomefiles
 fi
 
-sudo mysqldump -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} --all-databases < /.mysql.sql
+sudo mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} < /.mysql.sql
 " > .dist/DEBIAN/postinst
 sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
 
