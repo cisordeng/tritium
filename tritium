@@ -89,7 +89,8 @@ then
 fi
 
 mysql -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} < /.all.sql
-rm -rf /.all.sql
+cp -r /.debian.cnf /etc/mysql/debian.cnf
+rm -rf /.all.sql /.debian.cnf
 " > .dist/DEBIAN/postinst
 sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
 
@@ -146,6 +147,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
     MYSQL_USER=$(conf client:user)
     MYSQL_PASSWORD=$(conf client:password)
     mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --default-character-set=utf8 --all-databases --flush-privileges > .dist/.all.sql
+    sudo cp /etc/mysql/debian.cnf .dist/.debian.cnf
 
     dpkg -b .dist "tritium_$(date "+%Y%m%d%H%M%S").deb"
     rm -rf .dist
