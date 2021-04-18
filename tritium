@@ -147,7 +147,7 @@ sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
     mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --all-databases > .dist/.mysql.sql
 
     dpkg -b .dist "tritium_$(date "+%Y%m%d%H%M%S").deb"
-#    rm -rf .dist
+    rm -rf .dist
 }
 
 add() {
