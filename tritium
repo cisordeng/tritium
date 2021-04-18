@@ -55,56 +55,125 @@ version: 0.0.1
 architecture: amd64
 maintainer: cisordeng
 description: Restore and Backup.
+depends: vim, nginx, mysql-server, mycli, golang, nodejs
 " > .dist/DEBIAN/control
-
-    # control
-    mkdir -p .dist/DEBIAN
+    # preinst
 echo "\
-package: tritium
-version: 0.0.1
-architecture: amd64
-maintainer: cisordeng
-description: Restore and Backup.
-depends: vim, nginx, mysql-client, mycli, golang, nodejs
-" > .dist/DEBIAN/control
+#!/bin/bash
+" > .dist/DEBIAN/preinst
 
-    # link
+    # postinst
+echo "\
+#!/bin/bash
+function conf() {
+    IFS=':' read -r -a array <<< \"\$1\"
+    # shellcheck disable=SC2046
+    # shellcheck disable=SC2005
+    echo \$(sudo sed -nr \"/^\[\${array[0]}\]/ { :l /^\${array[1]}[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}\" /etc/mysql/debian.cnf)
+}
+MYSQL_USER=\$(conf client:user)
+MYSQL_PASSWORD=\$(conf client:password)
+USER=\$(eval getent passwd {\$(awk '/^UID_MIN/ {print \$2}' /etc/login.defs)..\$(awk '/^UID_MAX/ {print \$2}' /etc/login.defs)} | cut -d: -f1)
+if [ -d /.tritiumhomefiles ]
+then
+    sudo cp -r /.tritiumhomefiles/* ~/
+    for file in \$(ls -a /.tritiumhomefiles)
+    do
+        if [ \"\$file\" == \".\" ] || [ \"\$file\" == \"..\" ]
+        then
+            continue
+        fi
+        chown -R \$USER:\$USER ~/\$file
+    done
+    sudo rm -rf /.tritiumhomefiles
+fi
+
+mysqldump -u\${MYSQL_USER} -p\${MYSQL_PASSWORD} --all-databases < /.mysql.sql
+" > .dist/DEBIAN/postinst
+sudo chmod +x .dist/DEBIAN/preinst .dist/DEBIAN/postinst
+
+    # bash
     BASH_PATH=$(readlink -f "$0")
     mkdir -p  ".dist/usr/bin"
     cp "$BASH_PATH" ".dist/usr/bin/${NAME}"
 
     # add backup files
     BACKUP_FILES=$(cat ~/.tritiumfiles)
+    USER=~
     for file in $BACKUP_FILES
     do
-        if [ ! -d "$file" ] && [ ! -f "$file" ]
+        if [[ $file == ~* ]]
         then
-            echo "[$file] not directory or file!"
+            absolute_file="$USER${file:1}"
+        fi
+
+        if [ ! -d "$absolute_file" ] && [ ! -f "$absolute_file" ]
+        then
+            echo "[$absolute_file] not directory or file!"
             continue
         fi
+        EXIST_FILES[${#EXIST_FILES[@]}]=$file
         echo "add $file"
-        cp -r --parents "$file" .dist
+        cp -r --parents "$absolute_file" .dist
+
+        if [[ $file == ~* ]]
+        then
+            absolute_file="$USER${file:1}"
+        fi
     done
+
+    mkdir -p .dist/.tritiumhomefiles
+    if [ -d ".dist/${USER:1}" ]
+    then
+        mv .dist/${USER:1}/* .dist/.tritiumhomefiles/
+        rm -rf .dist/home
+    fi
+    if [ -f ~/.tritiumfiles ]
+    then
+        cp ~/.tritiumfiles .dist/.tritiumhomefiles/
+    fi
+    printf "%s\n" "${EXIST_FILES[@]}" > ~/.tritiumfiles
+
+    # mysql backup
+    function conf() {
+        IFS=':' read -r -a array <<< "$1"
+        # shellcheck disable=SC2046
+        # shellcheck disable=SC2005
+        echo $(sudo sed -nr "/^\[${array[0]}\]/ { :l /^${array[1]}[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" /etc/mysql/debian.cnf)
+    }
+    MYSQL_USER=$(conf client:user)
+    MYSQL_PASSWORD=$(conf client:password)
+    mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD --all-databases > .dist/.mysql.sql
 
     dpkg -b .dist "tritium_$(date "+%Y%m%d%H%M%S").deb"
     rm -rf .dist
 }
 
 add() {
-    if [ ! -d "$1" ] && [ ! -f "$1" ]
+    file=$1
+    if [ ! -d "$file" ] && [ ! -f "$file" ]
     then
-        echo "[$1] not directory or file!"
+        echo "[$file] not directory or file!"
         return
     fi
 
-    BACKUP_FILES=$(cat ~/.tritiumfiles)
-    if [[ $BACKUP_FILES =~ $1 ]]
+    USER=~
+    if [[ $file == $USER* ]]
     then
-        echo "[$1] is exist!"
-        return
+        file="~${1:${#USER}}"
     fi
 
-    echo "$1" >> ~/.tritiumfiles
+    if [ -f ~/.tritiumfiles ]
+    then
+        BACKUP_FILES=$(cat ~/.tritiumfiles)
+        if [[ $BACKUP_FILES =~ $file ]]
+        then
+            echo "[$file] is exist!"
+            return
+        fi
+    fi
+
+    echo "$file" >> ~/.tritiumfiles
 }
 
 if [ "$1" == "restore" ]
