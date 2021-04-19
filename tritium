@@ -23,7 +23,7 @@ version: 0.0.1
 architecture: amd64
 maintainer: cisordeng
 description: Restore and Backup.
-depends: vim, nginx, mysql-server, mycli, golang, nodejs
+depends: vim, nginx, mysql-server, mycli, golang, nodejs, npm
 " > .dist/DEBIAN/control
     # preinst
 echo "\
